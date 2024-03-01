@@ -3,7 +3,8 @@ import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const searchForm = document.querySelector('.search-form');
+// Elementy DOM
+const searchForm = document.getElementById('search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 
@@ -13,7 +14,7 @@ let totalHitsCount = 0;
 let lightboxInstance;
 
 // Stałe
-const apiKey = '42614686-f34bed80d5088dc8495810476';
+const apiKey = '42569428-b104c6fed739ee1603d22c65f';
 const imagesPerPage = 40;
 
 // Funkcja do pobierania danych z serwera
@@ -65,14 +66,8 @@ const renderImages = (data, append = false) => {
     } else {
       gallery.innerHTML = markup;
     }
-    // Inicjalizacja SimpleLightbox 
-    lightboxInstance = new SimpleLightbox('.lightbox', {
-      opacity: 0.8,
-      overlay: true,
-      closeText: '&times;',
-      loop: true,
-      closable: true
-    });
+    // Inicjalizacja SimpleLightbox
+    lightboxInstance = new SimpleLightbox('.lightbox');
     // Przewijanie strony w dół po renderowaniu obrazków
     const { height: cardHeight } =
       gallery.firstElementChild.getBoundingClientRect();
@@ -80,6 +75,13 @@ const renderImages = (data, append = false) => {
       top: cardHeight * 2,
       behavior: 'smooth',
     });
+
+    // Sprawdź, czy jest więcej obrazów do pobrania
+    if (data.hits.length < imagesPerPage * currentPage) {
+      loadMoreBtn.style.display = 'none'; // Jeśli nie ma więcej obrazów, ukryj przycisk "Load More"
+    } else {
+      loadMoreBtn.style.display = 'block'; // Jeśli są jeszcze obrazy, pokaż przycisk "Load More"
+    }
   }
 };
 
@@ -92,7 +94,6 @@ const searchImages = async query => {
     if (data.hits.length === 0) {
       loadMoreBtn.style.display = 'none';
     } else {
-      loadMoreBtn.style.display = 'block';
       Notiflix.Notify.success(`Hooray! We found ${totalHitsCount} images.`);
     }
   } catch (error) {
@@ -110,20 +111,18 @@ searchForm.addEventListener('submit', event => {
   }
   currentPage = 1;
   searchImages(query);
+  searchForm.reset();
 });
 
 // Obsługa przycisku "Load More"
 loadMoreBtn.addEventListener('click', async () => {
   currentPage++;
   try {
-    const data = await fetchData(searchForm.searchQuery.value.trim(), currentPage);
+    const data = await fetchData(
+      searchForm.searchQuery.value.trim(),
+      currentPage
+    );
     renderImages(data, true);
-    if (currentPage * imagesPerPage >= totalHitsCount) {
-      loadMoreBtn.style.display = 'none';
-      Notiflix.Notify.failure(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
   } catch (error) {
     Notiflix.Notify.failure(`ERROR: ${error.message}`);
   }
