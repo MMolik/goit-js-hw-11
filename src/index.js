@@ -85,6 +85,12 @@ const renderImages = (data, append = false) => {
   }
 };
 
+// Funkcja do wysyłania informacji o liczbie znalezionych obrazów
+const sendImageCountInfo = (count) => {
+  const message = count < 500 ? `Sorry, we found only ${count} images.` : `Hooray! We found ${count} images.`;
+  Notiflix.Notify.info(message);
+};
+
 // Funkcja do wyszukiwania obrazków
 const searchImages = async query => {
   try {
@@ -94,7 +100,7 @@ const searchImages = async query => {
     if (data.hits.length === 0) {
       loadMoreBtn.style.display = 'none';
     } else {
-      Notiflix.Notify.success(`Hooray! We found ${totalHitsCount} images.`);
+      sendImageCountInfo(totalHitsCount); // Wyślij informację o liczbie znalezionych obrazów
     }
   } catch (error) {
     Notiflix.Notify.failure(`ERROR: ${error.message}`);
@@ -117,12 +123,15 @@ searchForm.addEventListener('submit', event => {
 loadMoreBtn.addEventListener('click', async () => {
   currentPage++;
   try {
-    const data = await fetchData(
-      searchForm.searchQuery.value.trim(),
-      currentPage
-    );
+    const query = searchForm.searchQuery.value.trim(); // Pobierz aktualną wartość pola wyszukiwania
+    const data = await fetchData(query, currentPage);
     renderImages(data, true);
+    // Usuń przycisk "Load More", aby uniknąć ponownego pobierania wyników dla starego zapytania
+    loadMoreBtn.style.display = 'none';
   } catch (error) {
     Notiflix.Notify.failure(`ERROR: ${error.message}`);
   }
 });
+
+// Ukrycie przycisku "Load More" na początku
+loadMoreBtn.style.display = 'none';
