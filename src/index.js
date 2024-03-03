@@ -111,7 +111,6 @@ searchForm.addEventListener('submit', event => {
   }
   currentPage = 1;
   searchImages(query);
-  searchForm.reset();
 });
 
 // Obsługa przycisku "Load More"
